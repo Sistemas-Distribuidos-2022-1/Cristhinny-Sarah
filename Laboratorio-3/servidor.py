@@ -3,8 +3,24 @@ import _thread
 
 HOST = 'localhost'     # Endereco IP do Servidor
 PORT = 50000            # Porta que o Servidor está
+PORTBD = 8000
 
 mensagem = ''
+
+# Função chamada para acessar o banco de dados
+def acessaBD(problema):
+  # Para criar o socket precisamos passar a família de protocolos
+  # AF_INET = IPV4
+  # sock_STREAM = TCP
+  serverBD = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+  # o servidor estará linkado com a respectiva porta e HOST definidas anteriormente
+  serverBD.connect((HOST, PORTBD))
+  # envio dos dados para o servidor
+  serverBD.send(str(problema).encode())
+  # recebendo os dados do banco de dados
+  data = serverBD.recv(1024).decode()
+  
+  return data
 
 # Função chamada quando uma nova thread for iniciada
 def conectado(conexao, cliente):
@@ -13,15 +29,19 @@ def conectado(conexao, cliente):
   # Recebendo as mensagens através da conexão
   dados = conexao.recv(4096).decode()
  
-  print('\nCliente..:', cliente)
   print('Mensagem recebida:', dados)
   if dados == None:
     return
-  # para o cliente em python, comentar a linha seguinte
-  dados = dados[2:]
   
-  if int(dados[0]) == 1:
-    problema, nome, cargo, salario = dados.split('$')
+  # para o cliente em python, comentar a linha seguinte
+  mensagemBD = dados[2:]
+  #print(mensagemBD)
+  mensagemBD = str(mensagemBD)
+
+  dados = acessaBD(mensagemBD)
+
+  if int(mensagemBD) == 1:
+    nome, cargo, salario = dados.split('$')
     salario = float(salario)
     
     # Fazendo o reajuste do salario
@@ -31,8 +51,8 @@ def conectado(conexao, cliente):
       salario += (salario*18)/100
     mensagem = "Salario atualizado de " + nome + ": " + str(salario)
   
-  if int(dados[0]) == 2:
-    problema, nome, sexo, idade = dados.split('$')
+  if int(mensagemBD) == 2:
+    nome, sexo, idade = dados.split('$')
     
     # Analisando a maioridade
     if sexo == "feminino":
@@ -46,8 +66,8 @@ def conectado(conexao, cliente):
       else:
         mensagem = "Maioridade não atingida ainda!"
   
-  if int(dados[0]) == 3:
-    problema, N1, N2, N3 = dados.split('$')
+  if int(mensagemBD) == 3:
+    N1, N2, N3 = dados.split('$')
     mediaN1N2 = (float(N1) + float(N2))/2 
 
     # Analisando se o aluno foi aprovado
@@ -62,8 +82,8 @@ def conectado(conexao, cliente):
       else:
         mensagem = "O aluno foi reprovado!"
 
-  if int(dados[0]) == 4:    
-    problema, altura, sexo = dados.split('$')
+  if int(mensagemBD) == 4:    
+    altura, sexo = dados.split('$')
     pesoIdeal = 0.00
 
     # Analisando o peso ideal
@@ -74,9 +94,9 @@ def conectado(conexao, cliente):
 
     mensagem = "Peso ideal para o sexo " + sexo + " e altura " + altura + ": " + str(pesoIdeal)
   
-  if int(dados[0]) == 5:
-    problema, idade = dados.split('$')
-    idade = int(idade)
+  if int(mensagemBD) == 5:
+    idade = int(dados)
+    #idade = int(idade)
     
     # Analisando a categoria da pessoa
     if idade >= 0 and idade <= 4:
@@ -96,8 +116,8 @@ def conectado(conexao, cliente):
             else:
               mensagem = "Categoria: Adulto"
 
-  if int(dados[0]) == 6:
-    problema, nome, nivel, salarioBruto, numeroDeDependentes = dados.split('$')
+  if int(mensagemBD) == 6:
+    nome, nivel, salarioBruto, numeroDeDependentes = dados.split('$')
     salarioBruto = float(salarioBruto)
     numeroDeDependentes = int(numeroDeDependentes)
     salarioLiquido = 0.00
@@ -129,8 +149,8 @@ def conectado(conexao, cliente):
     
     mensagem = "Salario Liquido: " + str(salarioLiquido)
 
-  if int(dados[0]) == 7:
-    problema, idade, tempoDeServico = dados.split('$')
+  if int(mensagemBD) == 7:
+    idade, tempoDeServico = dados.split('$')
     idade = int(idade)
     tempoDeServico = int(tempoDeServico)
 
@@ -143,9 +163,8 @@ def conectado(conexao, cliente):
       else:
         mensagem = "O funcinario nao pode se aposentar ainda!"
 
-  if int(dados[0]) == 8:
-    problema, saldoMedio = dados.split('$')
-    saldoMedio = float(saldoMedio)
+  if int(mensagemBD) == 8:
+    saldoMedio = float(dados)
     credito = 0.00
 
     # Analisando se o cliente receberá crédito
@@ -164,7 +183,7 @@ def conectado(conexao, cliente):
 
   # enviando a mensagem para o cliente
   conexao.send(str(mensagem).encode())
-  print('\nFinalizando conexao do cliente ', cliente)
+  print('Finalizando conexao do cliente ', cliente)
   conexao.close()
   _thread.exit()
 
