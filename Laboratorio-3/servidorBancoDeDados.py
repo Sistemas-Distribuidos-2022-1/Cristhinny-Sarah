@@ -19,7 +19,7 @@ while True:
   print("Conectado em ", endereco)
 
   data = conexao.recv(1024).decode()
-
+  # mude para a senha do seu SGBD :D
   con = psycopg2.connect(host='localhost', database='SistemasDistribuidos', user='postgres', password='timosa123')
   cur = con.cursor()
 
